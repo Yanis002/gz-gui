@@ -504,9 +504,9 @@ int Patcher::patch()
             while (!gz_rom_name.empty() && isspace(gz_rom_name.back()))
                 gz_rom_name.pop_back();
 
-            if (settings.opt_ucode) {
+            if (settings.rom_opt_ucode) {
                 cmd = gru + " lua/inject_ucode.lua " + quote(rom_path) + " "
-                      + quote(settings.ucode_path);
+                      + quote(settings.rom_ucode_path);
                 emit output(QString::fromStdString("executing: " + cmd + "\n"));
                 status = invoke_subprogram(cmd, "", output_to_log,
                                            output_to_log);
@@ -555,13 +555,13 @@ int Patcher::patch()
                 cmd += " --raphnet";
             else if (settings.wad_remap == PatcherSettings::controller_remap_t::NONE)
                 cmd += " --disable-controller-remappings";
-            if (!settings.channel_id.empty())
-                cmd += " -i " + quote(settings.channel_id);
-            if (!settings.channel_title.empty())
-                cmd += " -t " + quote(settings.channel_title);
+            if (!settings.wad_channel_id.empty())
+                cmd += " -i " + quote(settings.wad_channel_id);
+            if (!settings.wad_channel_title.empty())
+                cmd += " -t " + quote(settings.wad_channel_title);
             cmd += " -r " + std::to_string(settings.wad_region);
-            if (settings.opt_extrom)
-                cmd += " -m " + quote(settings.extrom_path);
+            if (settings.wad_opt_extrom)
+                cmd += " -m " + quote(settings.wad_extrom_path);
             cmd += " -o " + quote(wad_path) + " " + quote(settings.wad_path);
 
             emit output(QString::fromStdString("executing: " + cmd + "\n"));
@@ -605,13 +605,13 @@ int Patcher::patch()
                 cmd += " --raphnet";
             else if (settings.iso_remap == PatcherSettings::controller_remap_t::NONE)
                 cmd += " --disable-controller-remappings";
-            if (!settings.game_id.empty())
-                cmd += " -i " + quote(settings.game_id);
-            if (!settings.game_name.empty())
-                cmd += " -t " + quote(settings.game_name);
+            if (!settings.iso_game_id.empty())
+                cmd += " -i " + quote(settings.iso_game_id);
+            if (!settings.iso_game_name.empty())
+                cmd += " -t " + quote(settings.iso_game_name);
             if (settings.iso_opt_extrom)
                 cmd += " -m " + quote(settings.iso_extrom_path);
-            if (settings.iso_is_mq && settings.iso_opt_extrom_mq)
+            if (settings.iso_opt_extrom_mq)
                 cmd += " --mq-rom " + quote(settings.iso_extrom_mq_path);
             if (!settings.iso_do_trim)
                 cmd += " --no-trim";

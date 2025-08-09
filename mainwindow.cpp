@@ -13,9 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    resize(minimumWidth(), minimumHeight());
 
-    // set patch_mode depending on the current tab index
+    // Set patch_mode depending on the current tab index
     connect(ui->tabwidget, &QTabWidget::currentChanged,
         [this](int index)
         {
@@ -44,8 +43,7 @@ MainWindow::MainWindow(QWidget *parent)
                     *result = QFileDialog::
                         getSaveFileName(&pd, caption, dir, filter,
                                         selectedFilter, options);
-                },
-                    Qt::BlockingQueuedConnection);
+                }, Qt::BlockingQueuedConnection);
             connect(&patcher, &Patcher::finished, this,
                 [&pd, &patcher]()
                 {
@@ -107,7 +105,7 @@ void MainWindow::init_rom_tab()
     connect(ui->checkbox_ucode, &QCheckBox::stateChanged,
         [this](int state)
         {
-            settings.opt_ucode = state;
+            settings.rom_opt_ucode = state;
             update_go_state();
         });
 
@@ -118,11 +116,11 @@ void MainWindow::init_rom_tab()
                 getOpenFileName(this, "Select ROM", "",
                                 "Nintendo 64 ROM (*.z64 *.v64 *.n64)");
             if (!path.isEmpty()) {
-                settings.ucode_path = path.toStdString();
+                settings.rom_ucode_path = path.toStdString();
                 path.remove(0, path.lastIndexOf('\\') + 1);
                 path.remove(0, path.lastIndexOf('/') + 1);
                 ui->label_ucode->setText(path);
-                settings.opt_ucode = true;
+                settings.rom_opt_ucode = true;
                 ui->checkbox_ucode->setCheckState(Qt::Checked);
             }
             update_go_state();
@@ -149,7 +147,7 @@ void MainWindow::init_wad_tab()
     connect(ui->checkbox_extrom, &QCheckBox::stateChanged,
         [this](int state)
         {
-            settings.opt_extrom = state;
+            settings.wad_opt_extrom = state;
             ui->button_extrom->setEnabled(state);
             update_go_state();
         });
@@ -161,11 +159,11 @@ void MainWindow::init_wad_tab()
                 getOpenFileName(this, "Select ROM", "",
                                 "Nintendo 64 ROM (*.z64 *.v64 *.n64)");
             if (!path.isEmpty()) {
-                settings.extrom_path = path.toStdString();
+                settings.wad_extrom_path = path.toStdString();
                 path.remove(0, path.lastIndexOf('\\') + 1);
                 path.remove(0, path.lastIndexOf('/') + 1);
                 ui->label_extrom->setText(path);
-                settings.opt_extrom = true;
+                settings.wad_opt_extrom = true;
                 ui->checkbox_extrom->setCheckState(Qt::Checked);
             }
             update_go_state();
@@ -184,7 +182,7 @@ void MainWindow::init_wad_tab()
             switch (index) {
                 case 0: {
                     ui->combobox_id->removeItem(2);
-                    settings.channel_id.clear();
+                    settings.wad_channel_id.clear();
                     break;
                 }
                 case 1: {
@@ -196,7 +194,7 @@ void MainWindow::init_wad_tab()
                     if (ok && !text.isEmpty()) {
                         ui->combobox_id->addItem(text);
                         ui->combobox_id->setCurrentIndex(2);
-                        settings.channel_id = text.toStdString();
+                        settings.wad_channel_id = text.toStdString();
                     }
                     else
                         ui->combobox_id->setCurrentIndex(0);
@@ -211,7 +209,7 @@ void MainWindow::init_wad_tab()
             switch (index) {
                 case 0: {
                     ui->combobox_title->removeItem(2);
-                    settings.channel_title.clear();
+                    settings.wad_channel_title.clear();
                     break;
                 }
                 case 1: {
@@ -223,7 +221,7 @@ void MainWindow::init_wad_tab()
                     if (ok && !text.isEmpty()) {
                         ui->combobox_title->addItem(text);
                         ui->combobox_title->setCurrentIndex(2);
-                        settings.channel_title = text.toStdString();
+                        settings.wad_channel_title = text.toStdString();
                     }
                     else
                         ui->combobox_title->setCurrentIndex(0);
@@ -244,7 +242,6 @@ void MainWindow::init_wad_tab()
 void MainWindow::init_iso_tab()
 {
     default_extrom_mq_iso_text = ui->label_extrom_mq_iso->text();
-    update_iso_mq_state(nullptr);
 
     connect(ui->button_iso, &QPushButton::clicked,
         [this]()
@@ -253,7 +250,6 @@ void MainWindow::init_iso_tab()
                 getOpenFileName(this, "Select ISO", "",
                                 "Nintendo GameCube ISO (*.iso)");
             if (!path.isEmpty()) {
-                update_iso_mq_state(&path);
                 settings.iso_path = path.toStdString();
                 path.remove(0, path.lastIndexOf('\\') + 1);
                 path.remove(0, path.lastIndexOf('/') + 1);
@@ -261,7 +257,7 @@ void MainWindow::init_iso_tab()
             }
             update_go_state();
         });
-    
+
     connect(ui->checkbox_extrom_iso, &QCheckBox::stateChanged,
         [this](int state)
         {
@@ -269,7 +265,7 @@ void MainWindow::init_iso_tab()
             ui->button_extrom_iso->setEnabled(state);
             update_go_state();
         });
-    
+
     connect(ui->button_extrom_iso, &QPushButton::clicked,
         [this]()
         {
@@ -286,7 +282,7 @@ void MainWindow::init_iso_tab()
             }
             update_go_state();
         });
-    
+
     connect(ui->checkbox_extrom_mq_iso, &QCheckBox::stateChanged,
         [this](int state)
         {
@@ -318,14 +314,14 @@ void MainWindow::init_iso_tab()
             settings.iso_remap = static_cast<PatcherSettings::
                                              controller_remap_t>(index);
         });
-    
+
     connect(ui->combobox_id_iso, QOverload<int>::of(&QComboBox::activated), this,
         [this](int index)
         {
             switch (index) {
                 case 0: {
                     ui->combobox_id_iso->removeItem(2);
-                    settings.game_id.clear();
+                    settings.iso_game_id.clear();
                     break;
                 }
                 case 1: {
@@ -337,7 +333,7 @@ void MainWindow::init_iso_tab()
                     if (ok && !text.isEmpty()) {
                         ui->combobox_id_iso->addItem(text);
                         ui->combobox_id_iso->setCurrentIndex(2);
-                        settings.game_id = text.toStdString();
+                        settings.iso_game_id = text.toStdString();
                     }
                     else
                         ui->combobox_id_iso->setCurrentIndex(0);
@@ -345,14 +341,14 @@ void MainWindow::init_iso_tab()
                 }
             }
         });
-    
+
     connect(ui->combobox_title_iso, QOverload<int>::of(&QComboBox::activated), this,
         [this](int index)
         {
             switch (index) {
                 case 0: {
                     ui->combobox_title_iso->removeItem(2);
-                    settings.game_name.clear();
+                    settings.iso_game_name.clear();
                     break;
                 }
                 case 1: {
@@ -364,7 +360,7 @@ void MainWindow::init_iso_tab()
                     if (ok && !text.isEmpty()) {
                         ui->combobox_title_iso->addItem(text);
                         ui->combobox_title_iso->setCurrentIndex(2);
-                        settings.game_name = text.toStdString();
+                        settings.iso_game_name = text.toStdString();
                     }
                     else
                         ui->combobox_title_iso->setCurrentIndex(0);
@@ -372,7 +368,7 @@ void MainWindow::init_iso_tab()
                 }
             }
         });
-    
+
     connect(ui->checkbox_iso_no_trim, &QCheckBox::stateChanged,
         [this](int state)
         {
@@ -381,71 +377,26 @@ void MainWindow::init_iso_tab()
         });
 }
 
-void MainWindow::update_iso_mq_state(QString *path)
-{
-    //! TODO: improve how the label text update is handled
-    QString new_text = "This game doesn't have Master Quest.";
-
-    settings.iso_is_mq = false;
-
-    if (path != nullptr) {
-        QFile iso(*path);
-
-        // technically this isn't a text file but
-        // we only need to read the first 6 characters of the file
-        if (iso.open(QFile::ReadOnly | QFile::Text)) {
-            QTextStream stream(&iso);
-            QString game_id = stream.read(6);
-
-            // supported MQ disc IDs (JP and US)
-            if (game_id == "D43J01" || game_id == "D43E01") {
-                new_text = QString::fromStdString(settings.iso_extrom_mq_path);
-
-                settings.iso_is_mq = true;
-
-                if (new_text != "") {
-                    new_text.remove(0, new_text.lastIndexOf('\\') + 1);
-                    new_text.remove(0, new_text.lastIndexOf('/') + 1);
-                } else {
-                    new_text = default_extrom_mq_iso_text;
-                }
-            }
-        } else {
-            QMessageBox::warning(nullptr, "", "ERROR: The ISO can't be opened.");
-        }
-    }
-
-    // update the ui accordingly
-    ui->checkbox_extrom_mq_iso->setVisible(settings.iso_is_mq);
-    ui->button_extrom_mq_iso->setVisible(settings.iso_is_mq);
-    ui->label_extrom_mq_iso->setText(new_text);
-}
-
 void MainWindow::update_go_state()
 {
     bool enable_go = false;
     switch (settings.patch_mode) {
         case PatcherSettings::patch_mode_t::ROM: {
             enable_go = !settings.rom_path.empty()
-                        && (!settings.opt_ucode
-                            || !settings.ucode_path.empty());
+                        && (!settings.rom_opt_ucode
+                            || !settings.rom_ucode_path.empty());
             break;
         }
         case PatcherSettings::patch_mode_t::WAD: {
             enable_go = !settings.wad_path.empty()
-                        && (!settings.opt_extrom
-                            || !settings.extrom_path.empty());
+                        && (!settings.wad_opt_extrom
+                            || !settings.wad_extrom_path.empty());
             break;
         }
         case PatcherSettings::patch_mode_t::ISO: {
-            if (settings.iso_is_mq) {
-                enable_go = !settings.iso_path.empty()
-                            && (!settings.iso_opt_extrom || !settings.iso_extrom_path.empty())
-                            && (!settings.iso_opt_extrom_mq || !settings.iso_extrom_mq_path.empty());
-            } else {
-                enable_go = !settings.iso_path.empty()
-                            && (!settings.iso_opt_extrom || !settings.iso_extrom_path.empty());
-            }
+            enable_go = !settings.iso_path.empty()
+                        && (!settings.iso_opt_extrom || !settings.iso_extrom_path.empty())
+                        && (!settings.iso_opt_extrom_mq || !settings.iso_extrom_mq_path.empty());
             break;
         }
     }
